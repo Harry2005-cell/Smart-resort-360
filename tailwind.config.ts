@@ -12,9 +12,6 @@ const config: Config = {
     "bg-success-DEFAULT", "bg-warning-DEFAULT", "bg-danger-DEFAULT", "bg-ai-DEFAULT",
     "text-success-DEFAULT", "text-warning-DEFAULT", "text-danger-DEFAULT", "text-ai-DEFAULT",
     "border-success-DEFAULT", "border-warning-DEFAULT", "border-danger-DEFAULT", "border-ai-DEFAULT",
-    { pattern: /(bg|text|border|accent)-(success|warning|danger|ai)-DEFAULT(\/\d+)?/ },
-    { pattern: /(from|to|via)-(success|warning|danger|ai)-DEFAULT/ },
-    { pattern: /accent-(success|warning|danger|ai)-DEFAULT/ },
   ],
   theme: {
     extend: {

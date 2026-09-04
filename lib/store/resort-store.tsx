@@ -103,6 +103,7 @@ export interface ResortStore {
   setHeatmapMode: (mode: string) => void;
   toggleSidebar: () => void;
   triggerDemoMode: () => void;
+  triggerDemo: () => void;
   stepDemo: () => void;
   updateMetricsFromRooms: () => void;
 }
@@ -241,6 +242,11 @@ const createResortStore = () =>
       set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
     triggerDemoMode: () => {
+      set({ demoModeActive: true, demoEventIndex: 0 });
+      get().stepDemo();
+    },
+
+    triggerDemo: () => {
       set({ demoModeActive: true, demoEventIndex: 0 });
       get().stepDemo();
     },

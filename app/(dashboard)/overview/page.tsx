@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, Users, Star, Activity, DollarSign, Zap, Target,
-  Sparkles, Cloud, Sun, ArrowUp, ArrowDown, Bell, Wind, Brain, Leaf, MapPin, Heart
+  Sparkles, Cloud, Sun, ArrowUp, ArrowDown, Bell, Wind, Brain, Leaf, MapPin, Heart, BarChart3
 } from "lucide-react";
 import { KPICard } from "@/components/dashboard/kpi-card";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
@@ -127,7 +127,7 @@ export default function OverviewPage() {
         <KPICard label="Occupancy Rate" value={m.occupancyRate} previous={m.prevOccupancy} format="percent" icon={Target} color="brand" />
         <KPICard label="Today's Revenue" value={m.revenue} previous={m.prevRevenue} format="currency" icon={DollarSign} color="success" />
         <KPICard label="ADR" value={m.adr} previous={m.prevAdr} format="currency" icon={TrendingUp} color="accent" />
-        <KPICard label="RevPAR" value={m.revpar} previous={m.prevRevpar} format="currency" icon={BarChartIcon} color="ai" />
+        <KPICard label="RevPAR" value={m.revpar} previous={m.prevRevpar} format="currency" icon={BarChart3} color="ai" />
         <KPICard label="Guest Satisfaction" value={m.guestSatisfaction} previous={m.prevSatisfaction} format="decimal" icon={Star} color="success" decimals={1} suffix="/100" />
         <KPICard label="NPS Score" value={m.nps} previous={m.prevNps} icon={Heart} color="brand" />
         <KPICard label="Staff Utilization" value={m.staffUtilization} previous={m.prevStaffUtil} format="percent" icon={Users} color="warning" />
@@ -329,6 +329,3 @@ export default function OverviewPage() {
   );
 }
 
-function BarChartIcon(props: any) {
-  return <TrendingUp {...props} />;
-}

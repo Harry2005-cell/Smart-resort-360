@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIService } from "@/lib/ai/AIService";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { messages, context } = await req.json();

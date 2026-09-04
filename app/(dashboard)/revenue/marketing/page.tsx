@@ -82,7 +82,7 @@ export default function MarketingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <div className="glass-card p-3 border-ai-DEFAULT/30">
             <div className="text-ai-light font-semibold text-xs">🎯 SUGGEST: Win-back Campaign</div>
-            <div className="text-white mt-1">Target 23 high-value guests who haven't returned in 12+ months. Predicted revenue: ₹6.8L.</div>
+            <div className="text-white mt-1">Target 23 high-value guests who haven&apos;t returned in 12+ months. Predicted revenue: ₹6.8L.</div>
             <button className="btn-ai text-xs mt-3">Generate Campaign</button>
           </div>
           <div className="glass-card p-3 border-brand-500/30">

@@ -44,15 +44,15 @@ export default function SegmentationPage() {
           <div className="space-y-3 text-sm text-white/70">
             <div className="alert-info text-xs">
               <div className="text-brand-300 font-semibold">🎯 Untapped Opportunity</div>
-              <div className="text-white/70 mt-1">"Wellness Seekers" segment spending 28% below their potential. Target with spa packages.</div>
+              <div className="text-white/70 mt-1">&quot;Wellness Seekers&quot; segment spending 28% below their potential. Target with spa packages.</div>
             </div>
             <div className="alert-warning text-xs">
               <div className="text-warning-light font-semibold">⚠️ Churn Risk</div>
-              <div className="text-white/70 mt-1">"Value Conscious" - 8 guests haven't returned in 12+ months. Win-back campaign recommended.</div>
+              <div className="text-white/70 mt-1">&quot;Value Conscious&quot; - 8 guests haven&apos;t returned in 12+ months. Win-back campaign recommended.</div>
             </div>
             <div className="alert-critical text-xs">
               <div className="text-danger-light font-semibold">🚀 Growth Lever</div>
-              <div className="text-white/70 mt-1">"Romantic Escapes" - only 14 guests but ₹19.5L revenue. Increase marketing budget by 30%.</div>
+              <div className="text-white/70 mt-1">&quot;Romantic Escapes&quot; - only 14 guests but ₹19.5L revenue. Increase marketing budget by 30%.</div>
             </div>
           </div>
         </div>

@@ -14,13 +14,60 @@ import {
   MessageSquare, MapPin, Heart, DollarSign,
   BarChart3, Target, Megaphone, Sparkles,
   LineChart, FlaskConical, BatteryCharging, Lock,
-  Workflow, Flame, Sun, Moon, ChevronLeft
+  Workflow, Flame, Sun, Moon, ChevronLeft, ArrowLeft, Home, CloudRain,
+  CheckSquare, CalendarClock, ListTodo, Sliders
 } from "lucide-react";
 import { useResortStore } from "@/lib/store/resort-store";
 import { signOut } from "next-auth/react";
 
 // ============================================
-// NAVIGATION STRUCTURE
+// STAFF-ONLY NAVIGATION (Exact 4 Prioritized Features)
+// ============================================
+
+const STAFF_NAV_ITEMS = [
+  {
+    id: "staff-tasks",
+    label: "Task Dashboard",
+    icon: CheckSquare,
+    href: "/operations/staff?tab=tasks",
+    badge: "⭐",
+    roles: ["STAFF", "HOUSEKEEPING", "MAINTENANCE"],
+  },
+  {
+    id: "staff-schedule",
+    label: "AI Schedule",
+    icon: CalendarClock,
+    href: "/operations/staff?tab=schedule",
+    badge: "⭐ AI",
+    roles: ["STAFF", "HOUSEKEEPING", "MAINTENANCE"],
+  },
+  {
+    id: "staff-requests",
+    label: "Guest Requests",
+    icon: MessageSquare,
+    href: "/operations/staff?tab=requests",
+    badge: "Live",
+    roles: ["STAFF", "HOUSEKEEPING", "MAINTENANCE"],
+  },
+  {
+    id: "staff-notifications",
+    label: "Notifications",
+    icon: Bell,
+    href: "/operations/staff?tab=notifications",
+    roles: ["STAFF", "HOUSEKEEPING", "MAINTENANCE"],
+  },
+  {
+    id: "inventory-staff",
+    label: "Inventory Staff",
+    icon: Package,
+    href: "/operations/inventory-staff",
+    badge: "AI",
+    roles: ["STAFF", "HOUSEKEEPING", "MAINTENANCE"],
+  },
+];
+
+// ============================================
+// FULL NAVIGATION STRUCTURE (Manager & Admin)
 // ============================================
 
 const NAV_ITEMS = [
@@ -29,14 +76,14 @@ const NAV_ITEMS = [
     label: "Overview",
     icon: LayoutDashboard,
     href: "/overview",
-    roles: ["all"],
+    roles: ["SUPER_ADMIN", "RESORT_MANAGER", "OPERATIONS_MANAGER", "REVENUE_MANAGER"],
   },
   {
     id: "digital-twin",
     label: "Digital Twin",
     icon: Building2,
     href: "/digital-twin",
-    roles: ["all"],
+    roles: ["SUPER_ADMIN", "RESORT_MANAGER", "OPERATIONS_MANAGER", "REVENUE_MANAGER"],
     badge: "3D",
   },
   {
@@ -47,6 +94,7 @@ const NAV_ITEMS = [
     children: [
       { id: "occupancy", label: "Occupancy", icon: Hotel, href: "/operations/occupancy" },
       { id: "staff", label: "Staff", icon: Users, href: "/operations/staff" },
+      { id: "staff-directory", label: "Staff Directory", icon: Users, href: "/operations/staff-directory", badge: "NEW" },
       { id: "maintenance", label: "Maintenance", icon: Wrench, href: "/operations/maintenance" },
       { id: "inventory", label: "Inventory", icon: Package, href: "/operations/inventory" },
     ],
@@ -55,25 +103,14 @@ const NAV_ITEMS = [
     id: "guests",
     label: "Guest Experience",
     icon: Star,
-    roles: ["SUPER_ADMIN", "RESORT_MANAGER", "CONCIERGE", "OPERATIONS_MANAGER"],
+    roles: ["SUPER_ADMIN", "CONCIERGE", "GUEST"],
     children: [
-      { id: "guest-list", label: "Guests", icon: Users, href: "/guests" },
+      { id: "guest-list", label: "Guests", icon: Users, href: "/guests", roles: ["SUPER_ADMIN", "CONCIERGE"] },
+      { id: "guest-digital-twin", label: "Digital Twin", icon: Building2, href: "/guests/digital-twin", badge: "3D", roles: ["SUPER_ADMIN", "CONCIERGE", "GUEST"] },
       { id: "concierge", label: "AI Concierge", icon: MessageSquare, href: "/guests/concierge", badge: "AI" },
-      { id: "journey", label: "Guest Journey", icon: MapPin, href: "/guests/journey" },
-      { id: "sentiment", label: "Sentiment", icon: Heart, href: "/guests/sentiment" },
-      { id: "recovery", label: "Service Recovery", icon: Activity, href: "/guests/recovery" },
-    ],
-  },
-  {
-    id: "revenue",
-    label: "Revenue Intelligence",
-    icon: TrendingUp,
-    roles: ["SUPER_ADMIN", "RESORT_MANAGER", "REVENUE_MANAGER"],
-    children: [
-      { id: "pricing", label: "Dynamic Pricing", icon: DollarSign, href: "/revenue/pricing", badge: "AI" },
-      { id: "forecast", label: "Forecasting", icon: LineChart, href: "/revenue/forecast" },
-      { id: "segmentation", label: "Segmentation", icon: Target, href: "/revenue/segmentation" },
-      { id: "marketing", label: "Marketing", icon: Megaphone, href: "/revenue/marketing" },
+      { id: "guest-weather", label: "Weather & India Map", icon: CloudRain, href: "/guests/weather", badge: "LIVE" },
+      { id: "journey", label: "Guest Journey", icon: MapPin, href: "/guests/journey", roles: ["SUPER_ADMIN", "CONCIERGE"] },
+      { id: "recovery", label: "Service Recovery", icon: Activity, href: "/guests/recovery", roles: ["SUPER_ADMIN", "CONCIERGE"] },
     ],
   },
   {
@@ -83,31 +120,12 @@ const NAV_ITEMS = [
     roles: ["SUPER_ADMIN", "RESORT_MANAGER", "REVENUE_MANAGER", "OPERATIONS_MANAGER"],
     badge: "AI",
     children: [
+      { id: "agents", label: "Multi-Agent Hub", icon: Brain, href: "/ai/agents", badge: "⭐ Gen AI" },
       { id: "copilot", label: "AI Copilot", icon: Bot, href: "/ai/copilot", badge: "AI" },
       { id: "actions", label: "Next Best Actions", icon: Sparkles, href: "/ai/actions" },
-      { id: "predictions", label: "Predictions", icon: FlaskConical, href: "/ai/predictions" },
-      { id: "simulator", label: "Scenario Simulator", icon: FlaskConical, href: "/ai/simulator" },
     ],
   },
-  {
-    id: "sustainability",
-    label: "Sustainability",
-    icon: Leaf,
-    roles: ["SUPER_ADMIN", "RESORT_MANAGER", "OPERATIONS_MANAGER"],
-    children: [
-      { id: "energy", label: "Energy", icon: BatteryCharging, href: "/sustainability/energy" },
-      { id: "resources", label: "Resources", icon: Wind, href: "/sustainability/resources" },
-    ],
-  },
-  {
-    id: "security",
-    label: "Security",
-    icon: Shield,
-    roles: ["SUPER_ADMIN", "RESORT_MANAGER"],
-    children: [
-      { id: "fraud", label: "Fraud Detection", icon: Lock, href: "/security/fraud" },
-    ],
-  },
+
   {
     id: "crisis",
     label: "Crisis Center",
@@ -248,9 +266,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const userRole = (session?.user as any)?.role || "CONCIERGE";
-  const filteredNav = NAV_ITEMS.filter(item =>
-    item.roles?.includes("all") || item.roles?.includes(userRole)
-  );
+  const userEmail = (session?.user as any)?.email || "";
+  const isStaff = userRole === "STAFF" || userRole === "HOUSEKEEPING" || userRole === "MAINTENANCE" || userEmail.toLowerCase().includes("staff");
+
+  const filteredNav = isStaff 
+    ? STAFF_NAV_ITEMS 
+    : NAV_ITEMS
+        .filter(item => item.roles?.includes("all") || item.roles?.includes(userRole))
+        .map(item => {
+          if (!item.children) return item;
+          return {
+            ...item,
+            children: item.children.filter((child: any) =>
+              !child.roles || child.roles.includes("all") || child.roles.includes(userRole)
+            ),
+          };
+        });
 
   return (
     <div className="min-h-screen bg-surface-950 flex overflow-hidden">
@@ -342,16 +373,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
-        <header className="h-16 bg-surface-900/60 backdrop-blur-xl border-b border-white/[0.05] flex items-center px-4 gap-4 flex-shrink-0">
+        <header className="h-16 bg-surface-900/60 backdrop-blur-xl border-b border-white/[0.05] flex items-center px-4 gap-2.5 flex-shrink-0">
           <button
-            className="lg:hidden text-white/60 hover:text-white"
+            className="lg:hidden text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10"
             onClick={() => setMobileOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </button>
 
+          {/* Quick Navigation: Back & Home buttons */}
+          <div className="flex items-center gap-1.5">
+            {/* Back Button */}
+            <button
+              onClick={() => router.back()}
+              title="Go back to previous page"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-white/90 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-brand-400" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+
+            {/* Home Button */}
+            <Link
+              href={isStaff ? "/operations/staff" : "/overview"}
+              title="Go to Homepage"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-white/90 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Home className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Home</span>
+            </Link>
+          </div>
+
           {/* Resort selector */}
-          <div className="hidden md:flex items-center gap-2 glass-card px-3 py-1.5 cursor-pointer hover:border-brand-500/30 transition-colors">
+          <div className="hidden xl:flex items-center gap-2 glass-card px-3 py-1.5 cursor-pointer hover:border-brand-500/30 transition-colors">
             <div className="w-5 h-5 bg-accent-gradient rounded-lg flex items-center justify-center flex-shrink-0">
               <Star className="w-3 h-3 text-white" />
             </div>
@@ -377,6 +431,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="w-1.5 h-1.5 rounded-full bg-ai-light animate-pulse" />
               <span className="text-ai-light text-xs font-medium">AI Active</span>
             </div>
+
+            {/* Direct Sign Out Button */}
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              title="Sign Out of Smart Resort 360"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-xs font-bold text-red-300 hover:text-red-200 transition-all shadow-sm active:scale-95 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
 
             {/* Notifications */}
             <div className="relative">

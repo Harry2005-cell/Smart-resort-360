@@ -8,12 +8,12 @@ import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
 interface Message { role: "user" | "assistant"; content: string; }
 
 const SUGGESTIONS = [
-  "Why is revenue up today?",
-  "Which rooms need attention?",
-  "Show me high-friction guests",
-  "How will the rain affect us?",
-  "What maintenance is urgent?",
-  "Optimize staff allocation",
+  "Need room cleaning and fresh bath towels",
+  "Plumbing leak: bathroom tap is leaking water",
+  "AC in my room is broken and not cooling",
+  "Repair request: TV and light switch issue",
+  "What dining options are available tonight?",
+  "How can I request a late checkout?",
 ];
 
 export default function ConciergePage() {
@@ -129,14 +129,6 @@ export default function ConciergePage() {
                 </button>
               ))}
             </div>
-          </div>
-          <div className="glass-card p-4">
-            <div className="text-white/40 text-xs uppercase font-semibold mb-2">AI Mode</div>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-2 h-2 rounded-full bg-ai-light animate-pulse" />
-              <span className="text-white">Demo Intelligence</span>
-            </div>
-            <p className="text-white/40 text-xs mt-2">Connect OpenAI API key in <code className="text-white/60">.env.local</code> to enable GPT-powered responses.</p>
           </div>
         </div>
       </div>

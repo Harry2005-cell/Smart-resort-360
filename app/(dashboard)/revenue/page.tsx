@@ -1,12 +1,11 @@
 "use client";
 
-import { TrendingUp, DollarSign, LineChart, Target, Megaphone } from "lucide-react";
+import { TrendingUp, DollarSign, Megaphone, Sliders } from "lucide-react";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
 
 const SUB = [
-  { href: "/revenue/pricing", label: "Dynamic Pricing", icon: DollarSign, description: "AI-powered rate optimization", color: "from-brand-500 to-ai-DEFAULT", badge: "AI" },
-  { href: "/revenue/forecast", label: "Forecasting", icon: LineChart, description: "30-day revenue predictions", color: "from-success-DEFAULT to-emerald-500" },
-  { href: "/revenue/segmentation", label: "Guest Segmentation", icon: Target, description: "RFM & behavior clusters", color: "from-accent-500 to-warning-DEFAULT" },
+  { href: "/revenue/simulator", label: "Occupancy Simulator", icon: Sliders, description: "Predict & set optimal rates based on room occupancy", color: "from-brand-600 via-indigo-600 to-ai-DEFAULT", badge: "AI" },
+  { href: "/revenue/pricing", label: "Dynamic Pricing", icon: DollarSign, description: "AI-powered rate optimization & rules", color: "from-brand-500 to-purple-600", badge: "AI" },
   { href: "/revenue/marketing", label: "Marketing", icon: Megaphone, description: "Campaigns & attribution", color: "from-pink-500 to-rose-700" },
 ];
 
@@ -14,7 +13,7 @@ export default function RevenuePage() {
   return (
     <PageContainer>
       <PageHeader title="Revenue Intelligence" description="Maximize ADR, RevPAR, and total revenue with AI" icon={TrendingUp} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {SUB.map((p) => (
           <a key={p.href} href={p.href} className="glass-card-hover p-6 group block">
             <div className="flex items-start justify-between mb-4">

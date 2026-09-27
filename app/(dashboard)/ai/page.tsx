@@ -1,20 +1,19 @@
 "use client";
 
-import { Brain, Sparkles, FlaskConical, Bot, Target } from "lucide-react";
+import { Brain, Sparkles, Bot } from "lucide-react";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
 
 const SUB = [
+  { href: "/ai/agents", label: "Multi-Agent Command Center", icon: Brain, description: "Master Orchestrator, Staff & Inventory Gen AI Agents", color: "from-ai-DEFAULT via-purple-600 to-brand-700", badge: "⭐ Gen AI" },
   { href: "/ai/copilot", label: "AI Copilot", icon: Bot, description: "Conversational intelligence", color: "from-ai-DEFAULT to-purple-700", badge: "AI" },
   { href: "/ai/actions", label: "Next Best Actions", icon: Sparkles, description: "Prioritized recommendations", color: "from-accent-500 to-warning-DEFAULT", badge: "AI" },
-  { href: "/ai/predictions", label: "Predictions", icon: FlaskConical, description: "Predictive analytics", color: "from-brand-500 to-ai-DEFAULT" },
-  { href: "/ai/simulator", label: "Scenario Simulator", icon: Target, description: "What-if analysis", color: "from-emerald-500 to-brand-500" },
 ];
 
 export default function AIPage() {
   return (
     <PageContainer>
-      <PageHeader title="AI Intelligence" description="Predictive models, recommendations, and scenario planning" icon={Brain} badge="AI" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <PageHeader title="AI Intelligence" description="Autonomous multi-agent orchestration, conversational copilot, and next best actions" icon={Brain} badge="AI" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {SUB.map((p) => (
           <a key={p.href} href={p.href} className="glass-card-hover p-6 group block">
             <div className="flex items-start justify-between mb-4">

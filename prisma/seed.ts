@@ -159,6 +159,8 @@ async function main() {
       { name: 'Ananya Mehta', email: 'manager@azurehills.com', password: hashedPassword, role: 'RESORT_MANAGER', department: 'Management' },
       { name: 'Vikram Patel', email: 'revenue@azurehills.com', password: hashedPassword, role: 'REVENUE_MANAGER', department: 'Revenue' },
       { name: 'Priya Nair', email: 'operations@azurehills.com', password: hashedPassword, role: 'OPERATIONS_MANAGER', department: 'Operations' },
+      { name: 'Staff Member', email: 'staff@azurehills.com', password: hashedPassword, role: 'OPERATIONS_MANAGER', department: 'Operations' },
+      { name: 'Aarav Sharma', email: 'guest@azurehills.com', password: hashedPassword, role: 'GUEST', department: 'Guest' },
       { name: 'Suresh Kumar', email: 'housekeeping@azurehills.com', password: hashedPassword, role: 'HOUSEKEEPING', department: 'Housekeeping' },
       { name: 'Ravi Sharma', email: 'maintenance@azurehills.com', password: hashedPassword, role: 'MAINTENANCE', department: 'Maintenance' },
       { name: 'Deepa Iyer', email: 'concierge@azurehills.com', password: hashedPassword, role: 'CONCIERGE', department: 'Concierge' },

@@ -15,7 +15,7 @@ const SUGGESTIONS = [
   "Optimize staff allocation",
 ];
 
-export default function ConciergeChat() {
+export default function ConciergeChat({ suggestions }: { suggestions?: string[] }) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "👋 Hello! I'm your **AI Copilot** for Azure Hills Resort. I have real-time access to occupancy, revenue, guests, maintenance, weather, and more. Ask me anything!" },
   ]);
@@ -90,20 +90,12 @@ export default function ConciergeChat() {
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-3 text-white"><Sparkles className="w-4 h-4 text-ai-light" /><span className="font-semibold text-sm">Quick Questions</span></div>
           <div className="space-y-2">
-            {SUGGESTIONS.map((s) => (
+            {(suggestions ?? SUGGESTIONS).map((s) => (
               <button key={s} onClick={() => send(s)} disabled={loading} className="w-full text-left text-xs glass-card p-2.5 hover:border-brand-500/30 transition-all text-white/70 hover:text-white disabled:opacity-50">
                 {s}
               </button>
             ))}
           </div>
-        </div>
-        <div className="glass-card p-4">
-          <div className="text-white/40 text-xs uppercase font-semibold mb-2">AI Mode</div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-2 h-2 rounded-full bg-ai-light animate-pulse" />
-            <span className="text-white">Demo Intelligence</span>
-          </div>
-          <p className="text-white/40 text-xs mt-2">Add OPENAI_API_KEY to enable GPT responses.</p>
         </div>
       </div>
     </div>

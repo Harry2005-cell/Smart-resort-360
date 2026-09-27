@@ -1,5 +1,4 @@
-// AI Service abstraction layer
-// Supports: OpenAI-compatible APIs + Demo mode (no API key needed)
+import { StaffSchedulingAgent } from "@/lib/ai/agents/StaffSchedulingAgent";
 
 export interface AIMessage {
   role: "user" | "assistant" | "system";
@@ -9,6 +8,7 @@ export interface AIMessage {
 export interface AIResponse {
   content: string;
   isDemo: boolean;
+  model?: string;
   confidence?: number;
 }
 
@@ -42,7 +42,7 @@ const DEMO_RESPONSES: Record<string, string> = {
     "**Current conditions:** 26.4°C, Cloudy, Wind 14.2 km/h\n**Rain probability: 68%** (⚠️ High)\n\n**Next 48 hours forecast:**\n- Today evening: Showers likely (72%)\n- Tomorrow: Heavy rain (85%), 24-25°C\n- Day after: Monsoon intensity (91%)\n\n**AI Weather-to-Revenue Impact:**\n- 🏊 Pool/Outdoor: -42% demand\n- 💆 Spa: +24% demand → Book now or lose revenue\n- 🍽️ Room service: +17% orders\n- 🍷 Restaurant dinner: +13% covers\n\n**Automation rules triggered:** Rain protocol activated. 2 staff reallocated to Spa.",
 
   default:
-    "I'm the **Azure Hills AI Copilot**. I have real-time access to all resort data including occupancy, revenue, guest profiles, staff, maintenance, and more.\n\nI can help you with:\n- 📊 **Revenue analysis** — 'Why is revenue down?'\n- 🏨 **Occupancy insights** — 'Which rooms are available tonight?'\n- 👥 **Guest management** — 'Show me high-friction guests'\n- 🔧 **Maintenance alerts** — 'What equipment needs attention?'\n- 💰 **Pricing strategy** — 'Should I adjust rates?'\n- 🌦️ **Weather impact** — 'How will rain affect us?'\n- 👮 **Staff optimization** — 'Are we overstaffed anywhere?'\n\nWhat would you like to know?",
+    "I'm your **Azure Hills AI Concierge**. I have real-time access to all resort telemetry, occupancy, guest experience, staff operations, maintenance, and revenue intelligence.\n\nI can assist you with:\n- 🏨 **Resort Operations & Occupancy** — 'Which villas are available tonight?'\n- 🍽️ **Dining & Experiences** — 'What are the top evening banquet options?'\n- 👥 **Guest Intelligence & VIPs** — 'Show me high-friction guest alerts'\n- 📊 **Revenue Intelligence** — 'How is RevPAR tracking this week?'\n- 🔧 **Maintenance & Assets** — 'What equipment needs immediate attention?'\n- 🌦️ **Weather Forecast** — 'How will monsoon rains impact our pool & outdoor dining?'\n\nHow may I assist your resort operations today?",
 };
 
 function getDemoResponse(userMessage: string): string {
@@ -54,7 +54,7 @@ function getDemoResponse(userMessage: string): string {
   if (msg.includes("occupanc") || msg.includes("room") || msg.includes("available") || msg.includes("book")) {
     return DEMO_RESPONSES.occupancy;
   }
-  if (msg.includes("staff") || msg.includes("employee") || msg.includes("housekeep") || msg.includes("worker")) {
+  if (msg.includes("staff") || msg.includes("employee") || msg.includes("housekeep") || msg.includes("worker") || msg.includes("schedule")) {
     return DEMO_RESPONSES.staff;
   }
   if (msg.includes("maintenance") || msg.includes("hvac") || msg.includes("equipment") || msg.includes("repair") || msg.includes("broken")) {
@@ -77,81 +77,150 @@ function getDemoResponse(userMessage: string): string {
   }
 
   // Contextual fallback
-  if (msg.includes("hello") || msg.includes("hi") || msg.includes("help")) {
+  if (msg.includes("hello") || msg.includes("hi") || msg.includes("help") || msg.includes("who are you")) {
     return DEMO_RESPONSES.default;
   }
 
-  return `Based on current resort data for **Azure Hills Resort**:\n\n${DEMO_RESPONSES.default}\n\n*Try asking about revenue, occupancy, staff, maintenance, or guests.*`;
+  return `Based on real-time intelligence for **Azure Hills Resort**:\n\n${DEMO_RESPONSES.default}\n\n*Feel free to ask about live revenue, occupancy, staff schedules, maintenance, or guest VIPs.*`;
 }
 
 export class AIService {
-  private static apiKey = process.env.OPENAI_API_KEY;
-  private static model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-  private static isDemoMode = !process.env.OPENAI_API_KEY;
+  private static getGroqKey() {
+    return process.env.GROQ_API_KEY || "";
+  }
+
+  private static getOpenAIKey() {
+    return process.env.OPENAI_API_KEY || "";
+  }
 
   static async chat(
     messages: AIMessage[],
     resortContext?: string
   ): Promise<AIResponse> {
-    if (this.isDemoMode || !this.apiKey) {
-      const lastMessage = messages[messages.length - 1]?.content || "";
-      const response = getDemoResponse(lastMessage);
+    const lastUserMsg = messages.filter((m) => m.role === "user").pop()?.content || "";
+    const lower = lastUserMsg.toLowerCase();
 
-      // Simulate network delay for realism
-      await new Promise((resolve) =>
-        setTimeout(resolve, 600 + Math.random() * 800)
-      );
+    // Check if user message is a complaint/request (cleaning, repairs, plumbing, AC, towels, etc.)
+    const isComplaintOrIssue = [
+      "clean", "housekeep", "towel", "linen", "dirty", "stain", "trash", "bed", "vacuum", "mop", "sweep", "soap", "shampoo",
+      "plumb", "leak", "tap", "pipe", "water", "toilet", "flush", "sink", "drain", "clog",
+      "repair", "fix", "ac", "aircon", "cool", "heat", "tv", "light", "switch", "door", "lock",
+      "broken", "damage", "geyser", "shower", "smell", "odor", "maintenance", "spill", "fan"
+    ].some((kw) => lower.includes(kw));
 
-      return {
-        content: response,
-        isDemo: true,
-        confidence: 0.95,
-      };
+    if (isComplaintOrIssue) {
+      try {
+        const dispatch = await StaffSchedulingAgent.assignStaffForGuestIssue(lastUserMsg);
+        return {
+          content: `I have received your request regarding **"${lastUserMsg}"**! 🚨\n\nOur **Staff Scheduling Agent** has processed your message and immediately assigned on-duty staff to assist you at your room.\n\n**Immediate Dispatch Confirmation:**\n- 📋 **Ticket Number:** \`#${dispatch.ticketId}\`\n- 👤 **Assigned Staff:** **${dispatch.staffName}** (${dispatch.staffDept})\n- 🏷️ **Service Category:** ${dispatch.category}\n- ⏱️ **Estimated Arrival:** **${dispatch.estimatedMinutes} minutes**\n- 🤖 **Agent Controller:** Staff Scheduling Agent (Logged & Persisted to DB)\n\n**${dispatch.staffName}** has been dispatched to your room as top priority. Please let me know if you need anything else!`,
+          isDemo: false,
+          model: "StaffSchedulingAgent Autonomous Dispatch",
+          confidence: 0.99,
+        };
+      } catch (err) {
+        console.error("StaffSchedulingAgent dispatch error:", err);
+      }
     }
 
-    try {
-      const systemPrompt = `You are the AI Copilot for Azure Hills Resort, a 5-star luxury resort in Coorg, Karnataka, India. 
-You have access to real-time resort data. ${resortContext || ""}
-Respond concisely with actionable insights. Use markdown formatting. Include specific numbers where available.`;
+    const groqKey = this.getGroqKey();
+    const openAIKey = this.getOpenAIKey();
 
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
+    // 1. Check if Groq API Key is configured (Fastest Inference)
+    if (groqKey) {
+      try {
+        const systemPrompt = `You are the AI Concierge for Azure Hills Resort, a premier 5-star luxury sanctuary in Coorg, Karnataka, India.
+You have real-time access to all resort systems: occupancy (87.4%), revenue intelligence, VIP guests, staff scheduling, predictive maintenance, and dining/spa.
+${resortContext ? `Current context:\n${resortContext}` : ""}
+Respond with exceptional luxury hospitality tone, actionable insights, markdown bolding, and specific data points where appropriate. Keep answers concise, clear, and structured.`;
+
+        const model = process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
+
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${this.apiKey}`,
+            Authorization: `Bearer ${groqKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: this.model,
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...messages,
+            ],
+            temperature: 0.6,
+            max_tokens: 800,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content;
+          if (content) {
+            return {
+              content,
+              isDemo: false,
+              model: `Groq (${model})`,
+              confidence: 0.98,
+            };
+          }
+        } else {
+          console.warn("Groq API returned error status:", response.status);
+        }
+      } catch (err) {
+        console.error("Groq API error:", err);
+      }
+    }
+
+    // 2. Check if OpenAI Key is configured
+    if (openAIKey) {
+      try {
+        const systemPrompt = `You are the AI Concierge for Azure Hills Resort, a 5-star luxury sanctuary in Coorg, Karnataka, India. ${resortContext || ""}`;
+        const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${openAIKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
             messages: [
               { role: "system", content: systemPrompt },
               ...messages,
             ],
             temperature: 0.7,
-            max_tokens: 500,
+            max_tokens: 600,
           }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content;
+          if (content) {
+            return {
+              content,
+              isDemo: false,
+              model: `OpenAI (${model})`,
+              confidence: 0.95,
+            };
+          }
         }
-      );
-
-      if (!response.ok) throw new Error("API call failed");
-
-      const data = await response.json();
-      return {
-        content:
-          data.choices?.[0]?.message?.content || "Unable to generate response.",
-        isDemo: false,
-        confidence: 0.95,
-      };
-    } catch (error) {
-      console.error("AI API error, falling back to demo mode:", error);
-      const lastMessage = messages[messages.length - 1]?.content || "";
-      return {
-        content: getDemoResponse(lastMessage),
-        isDemo: true,
-        confidence: 0.85,
-      };
+      } catch (err) {
+        console.error("OpenAI API error:", err);
+      }
     }
+
+    // 3. Fallback: Ultra-Rich Demo Mode
+    const lastMessage = messages[messages.length - 1]?.content || "";
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    return {
+      content: getDemoResponse(lastMessage),
+      isDemo: true,
+      model: "Demo Mode (Mock Intelligence)",
+      confidence: 0.92,
+    };
   }
 
   static generateRecommendation(type: string, context: Record<string, any>): string {
@@ -167,7 +236,7 @@ Respond concisely with actionable insights. Use markdown formatting. Include spe
     }
   }
 
-  static get demoMode() {
-    return this.isDemoMode;
+  static get isLiveLLM() {
+    return Boolean(process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY);
   }
 }

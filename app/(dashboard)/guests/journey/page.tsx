@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { MapPin, Plane, Bed, Coffee, Sparkles, LogIn, Utensils, BedDouble, Sun } from "lucide-react";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
 
@@ -31,6 +34,15 @@ const TOUCHPOINTS = [
 ];
 
 export default function JourneyPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    const role = (session?.user as any)?.role;
+    if (role === "GUEST") {
+      router.replace("/guests/concierge");
+    }
+  }, [session, router]);
   return (
     <PageContainer>
       <PageHeader title="Guest Journey" description="End-to-end experience map across every touchpoint" icon={MapPin} />

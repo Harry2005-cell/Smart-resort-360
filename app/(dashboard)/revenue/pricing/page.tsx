@@ -1,6 +1,7 @@
 "use client";
 
-import { DollarSign, Sparkles, TrendingUp, CheckCircle2, X } from "lucide-react";
+import { DollarSign, Sparkles, TrendingUp, CheckCircle2, X, Sliders, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -14,7 +15,22 @@ const PRICING = [
 export default function PricingPage() {
   return (
     <PageContainer>
-      <PageHeader title="Dynamic Pricing" description="AI-recommended rate adjustments with revenue impact" icon={DollarSign} badge="AI" />
+      <PageHeader
+        title="Dynamic Pricing"
+        description="AI-recommended rate adjustments with revenue impact"
+        icon={DollarSign}
+        badge="AI"
+        actions={
+          <Link
+            href="/revenue/simulator"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-ai-DEFAULT text-white text-xs font-semibold shadow-glow-brand hover:brightness-110 transition-all"
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Launch Occupancy Simulator</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="kpi-card"><div className="metric-label">Active Recommendations</div><div className="metric-value">{PRICING.length}</div></div>

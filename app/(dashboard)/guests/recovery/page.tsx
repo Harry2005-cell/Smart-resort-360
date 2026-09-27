@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Activity, AlertCircle, CheckCircle2, Clock, Sparkles, MessageSquare } from "lucide-react";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
 import { cn } from "@/lib/utils";
@@ -25,6 +28,15 @@ const SENTIMENT_COLORS: Record<string, string> = {
 };
 
 export default function RecoveryPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if ((session?.user as any)?.role === "GUEST") {
+      router.replace("/guests/concierge");
+    }
+  }, [session, router]);
+
   return (
     <PageContainer>
       <PageHeader title="Service Recovery" description="AI-detected friction with automatic resolution workflows" icon={Activity} badge="AI" />

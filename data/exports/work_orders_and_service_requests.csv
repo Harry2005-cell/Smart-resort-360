@@ -1,0 +1,7 @@
+id,title,category,priority,status,roomNumber,assignedStaff,estimatedCost,createdAt
+"cmuhzqv98008xxprjait3dr27","HVAC Filter Replacement - Block A","","HIGH","OPEN","N/A","","","2026-09-26T06:10:45.308Z"
+"cmuhzqv98008yxprjxz96qr60","Elevator 2 Annual Inspection","","HIGH","OPEN","N/A","","","2026-09-26T06:10:45.308Z"
+"cmuhzqv98008zxprj6xslnhi8","Villa V07 AC Unit Repair","","CRITICAL","IN_PROGRESS","N/A","","","2026-09-26T06:10:45.308Z"
+"cmuhzqv980090xprjogmv19oz","Pool Pump Lubrication","","MEDIUM","COMPLETED","N/A","","","2026-09-26T06:10:45.308Z"
+"cmuhzqv980091xprj56uy48yx","Kitchen Refrigeration - Temperature Calibration","","HIGH","OPEN","N/A","","","2026-09-26T06:10:45.308Z"
+"cmuhzqv980092xprj0liijzwp","Backup Generator Test Run","","HIGH","OPEN","N/A","","","2026-09-26T06:10:45.308Z"

@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { type LucideIcon } from "lucide-react";
+import { type LucideIcon, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -10,9 +11,12 @@ interface PageHeaderProps {
   icon?: LucideIcon;
   actions?: React.ReactNode;
   badge?: string;
+  showBackButton?: boolean;
 }
 
-export function PageHeader({ title, description, icon: Icon, actions, badge }: PageHeaderProps) {
+export function PageHeader({ title, description, icon: Icon, actions, badge, showBackButton = true }: PageHeaderProps) {
+  const router = useRouter();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -20,8 +24,17 @@ export function PageHeader({ title, description, icon: Icon, actions, badge }: P
       className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
     >
       <div className="flex items-center gap-3">
+        {showBackButton && (
+          <button
+            onClick={() => router.back()}
+            title="Go Back"
+            className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer flex-shrink-0 shadow-sm active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4 text-brand-400" />
+          </button>
+        )}
         {Icon && (
-          <div className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center shadow-glow-brand">
+          <div className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center shadow-glow-brand flex-shrink-0">
             <Icon className="w-5 h-5 text-white" />
           </div>
         )}

@@ -337,6 +337,33 @@ model Supplier {
 }
 
 // ============================================
+// INVENTORY STAFF REQUESTS
+// ============================================
+
+model InventoryRequest {
+  id            String    @id @default(cuid())
+  sku           String
+  itemName      String
+  category      String
+  currentStock  Float
+  requestedQty  Float
+  unit          String
+  estimatedCost Float
+  priority      String    @default("HIGH") // CRITICAL | HIGH | MEDIUM
+  reason        String
+  vendor        String?
+  status        String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  approvedBy    String?
+  approvedAt    DateTime?
+  rejectionNote String?
+  raisedBy      String    @default("InventoryManagementAgent")
+  poNumber      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@map("inventory_requests")
+}
+
+// ============================================
 // F&B
 // ============================================
 
@@ -516,4 +543,39 @@ model CrisisEvent {
   startedAt     DateTime  @default(now())
   resolvedAt    DateTime?
   @@map("crisis_events")
+}
+
+// ============================================
+// AI AGENT RUNS (Real-time data + DB persistence)
+// ============================================
+
+model AgentRun {
+  id              String    @id @default(cuid())
+  agentName       String    // StaffSchedulingAgent | InventoryAgent | OrchestratorAgent
+  agentRole       String
+  prompt          String
+  summary         String
+  resultJson      String    // Full JSON output stored as string
+  confidence      Float     @default(0.0)
+  durationMs      Int       @default(0)
+  status          String    @default("COMPLETED") // RUNNING | COMPLETED | FAILED
+  triggeredBy     String    @default("SYSTEM")   // user email or SYSTEM
+  createdAt       DateTime  @default(now())
+  @@map("agent_runs")
+}
+
+model OccupancySnapshot {
+  id              String    @id @default(cuid())
+  totalRooms      Int
+  occupiedRooms   Int
+  occupancyPct    Float
+  avgBasePrice    Float
+  dynamicMultiplier Float
+  projectedRevenue  Float
+  projectedADR    Float
+  projectedRevPAR Float
+  simulatedBy     String    @default("SYSTEM")
+  appliedToPMS    Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  @@map("occupancy_snapshots")
 }

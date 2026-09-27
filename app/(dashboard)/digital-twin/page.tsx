@@ -1,239 +1,200 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Html, Text } from "@react-three/drei";
-import * as THREE from "three";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Building2, Maximize2, Eye, Layers, Wind, ThermometerSun, Activity, MapPin, Sparkles } from "lucide-react";
+import { 
+  Building2, Eye, Layers, Activity, Sparkles, Sliders, 
+  BedDouble, Waves, Star, RefreshCw, Key, ShieldCheck, Thermometer
+} from "lucide-react";
+import dynamic from "next/dynamic";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
+import { ResortProvider, useResort } from "@/context/ResortContext";
+import { FloorSelectorSidebar } from "@/components/digital-twin/FloorSelectorSidebar";
+import { RoomDetailModal } from "@/components/digital-twin/RoomDetailModal";
+import { RoomStatusLegend } from "@/components/digital-twin/RoomStatusLegend";
 
-interface Room {
-  id: string; number: string; type: string; status: string; floor: number;
-  buildingName: string; positionX: number; positionY: number; positionZ: number;
-  temperature: number; guest: any;
-}
+const Resort3DCanvas = dynamic(
+  () => import("@/components/digital-twin/Resort3DCanvas").then((mod) => mod.Resort3DCanvas),
+  { ssr: false, loading: () => <div className="w-full h-full flex items-center justify-center bg-slate-950/80 text-cyan-400">Loading 3D Resort Digital Twin...</div> }
+);
 
-const STATUS_COLORS: Record<string, string> = {
-  OCCUPIED: "#6366f1",
-  AVAILABLE: "#22c55e",
-  CLEANING: "#f59e0b",
-  MAINTENANCE: "#ef4444",
-  OUT_OF_ORDER: "#71717a",
-};
-
-function BuildingShape({ position, rooms, buildingName, onSelect }: { position: [number, number, number]; rooms: Room[]; buildingName: string; onSelect: (r: Room) => void }) {
-  const groupRef = useRef<THREE.Group>(null);
-  useFrame((s) => {
-    if (groupRef.current) {
-      groupRef.current.position.y = position[1] + Math.sin(s.clock.elapsedTime * 0.5) * 0.05;
-    }
-  });
-
-  const floors = Math.max(1, ...rooms.map((r) => r.floor));
-  const floorHeight = 0.6;
-  const width = 4;
-  const depth = 4;
-
-  return (
-    <group position={position} ref={groupRef}>
-      {/* Building shell */}
-      <mesh position={[0, (floors * floorHeight) / 2, 0]}>
-        <boxGeometry args={[width, floors * floorHeight, depth]} />
-        <meshStandardMaterial color="#1a1a2e" transparent opacity={0.15} emissive="#6366f1" emissiveIntensity={0.1} />
-      </mesh>
-
-      {/* Floor slabs */}
-      {Array.from({ length: floors + 1 }).map((_, i) => (
-        <mesh key={i} position={[0, i * floorHeight, 0]}>
-          <boxGeometry args={[width + 0.1, 0.05, depth + 0.1]} />
-          <meshStandardMaterial color="#312e81" emissive="#6366f1" emissiveIntensity={0.2} />
-        </mesh>
-      ))}
-
-      {/* Rooms */}
-      {rooms.map((room) => {
-        const xOffset = ((parseInt(room.number.replace(/\D/g, "").slice(-2) || "0") % 5) - 2) * 0.7;
-        const y = (room.floor - 1) * floorHeight + 0.3;
-        const color = STATUS_COLORS[room.status] || "#71717a";
-        const isOccupied = room.status === "OCCUPIED";
-        return (
-          <group key={room.id} position={[xOffset, y, 0]}>
-            <mesh
-              onClick={(e) => { e.stopPropagation(); onSelect(room); }}
-              onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = "pointer"; }}
-              onPointerOut={() => { document.body.style.cursor = "default"; }}
-            >
-              <boxGeometry args={[0.6, 0.5, 0.6]} />
-              <meshStandardMaterial color={color} emissive={color} emissiveIntensity={isOccupied ? 0.6 : 0.3} />
-            </mesh>
-            {isOccupied && (
-              <pointLight color={color} intensity={0.4} distance={2} />
-            )}
-          </group>
-        );
-      })}
-
-      {/* Building label */}
-      <Text position={[0, floors * floorHeight + 0.6, 0]} fontSize={0.4} color="#ffffff" anchorX="center" anchorY="middle">
-        {buildingName}
-      </Text>
-    </group>
-  );
-}
-
-function Ground() {
-  return (
-    <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-        <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color="#0a0a0f" />
-      </mesh>
-      <gridHelper args={[60, 30, "#312e81", "#1a1a2e"]} position={[0, 0, 0]} />
-    </group>
-  );
-}
-
-export default function DigitalTwinPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [selected, setSelected] = useState<Room | null>(null);
-  const [heatMode, setHeatMode] = useState<"status" | "temperature" | "type">("status");
+function ManagerDigitalTwinContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    fetch("/api/rooms").then((r) => r.json()).then((d) => setRooms(d.rooms || [])).catch(console.error);
-  }, []);
+    if (searchParams.get("tab") === "revenue") {
+      router.replace("/revenue/simulator");
+    }
+  }, [searchParams, router]);
 
-  // Group by building
-  const byBuilding: Record<string, Room[]> = {};
-  rooms.forEach((r) => {
-    const k = r.buildingName || "Other";
-    if (!byBuilding[k]) byBuilding[k] = [];
-    byBuilding[k].push(r);
-  });
+  const { 
+    rooms, 
+    selectedRoom, 
+    setSelectedRoom, 
+    selectedFloor, 
+    setSelectedFloor, 
+    selectedGuest,
+    availableCount, 
+    occupiedCount, 
+    occupancyRate,
+    maintenanceAlertCount,
+    resetDemoData
+  } = useResort();
 
-  const buildingPositions: Record<string, [number, number, number]> = {
-    "Main Wing": [0, 0, 0],
-    "East Wing": [10, 0, 0],
-    "Villa Block": [-10, 0, 8],
-    "Azure Spa": [8, 0, -8],
-    "Fitness Center": [-8, 0, -6],
-  };
+  const [statusFilter, setStatusFilter] = useState<any>(null);
+
+  // Quick select an occupied room (e.g. Room 904)
+  const sampleVipRoom = rooms.find((r) => r.roomNumber === 904) || rooms.find((r) => r.status === "OCCUPIED");
 
   return (
     <PageContainer>
       <PageHeader
         title="Digital Twin"
-        description="3D immersive view of your entire property in real time"
+        description="3D immersive spatial model of your entire property in real time with IoT telemetry"
         icon={Building2}
-        badge="3D"
+        badge="3D TWIN"
         actions={
           <div className="flex items-center gap-2">
-            <div className="glass-card p-1 flex items-center gap-1">
-              {(["status", "temperature", "type"] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setHeatMode(m)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${heatMode === m ? "bg-brand-500/30 text-white" : "text-white/50 hover:text-white"}`}
-                >
-                  {m.charAt(0).toUpperCase() + m.slice(1)}
-                </button>
-              ))}
-            </div>
+            <Link
+              href="/revenue/simulator"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white/80 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-all flex items-center gap-1.5 border border-white/[0.08] shadow-sm"
+            >
+              <Sliders className="w-3.5 h-3.5 text-brand-400" />
+              <span>Revenue Simulator</span>
+            </Link>
+
+            {sampleVipRoom && (
+              <button
+                onClick={() => {
+                  setSelectedFloor(sampleVipRoom.floor);
+                  setSelectedRoom(sampleVipRoom);
+                }}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/40 text-xs font-semibold text-brand-300 transition-all shadow-sm active:scale-95"
+              >
+                <Key className="w-3.5 h-3.5 text-brand-400" />
+                <span>Suite 904 (VIP)</span>
+              </button>
+            )}
+
+            <button
+              onClick={resetDemoData}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-semibold text-white/70 hover:text-white transition-all active:scale-95"
+              title="Reset Twin State"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
           </div>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-3 glass-card overflow-hidden relative" style={{ height: "70vh" }}>
-          <Canvas camera={{ position: [15, 12, 18], fov: 50 }} shadows>
-            <color attach="background" args={["#0a0a0f"]} />
-            <ambientLight intensity={0.3} />
-            <directionalLight position={[10, 15, 5]} intensity={0.7} />
-            <pointLight position={[-10, 10, -10]} intensity={0.4} color="#7c3aed" />
-            <Ground />
-            {Object.entries(byBuilding).map(([name, rs]) => {
-              const pos = buildingPositions[name] || [0, 0, 0];
-              return <BuildingShape key={name} position={pos} rooms={rs} buildingName={name} onSelect={setSelected} />;
-            })}
-            <OrbitControls enablePan enableZoom enableRotate maxPolarAngle={Math.PI / 2.1} />
-          </Canvas>
-
-          <div className="absolute top-4 left-4 glass-card p-3 text-xs space-y-1.5">
-            <div className="text-white/40 uppercase text-[10px] font-semibold">Legend</div>
-            {Object.entries(STATUS_COLORS).map(([s, c]) => (
-              <div key={s} className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded" style={{ background: c }} />
-                <span className="text-white/70">{s.replace("_", " ")}</span>
-              </div>
-            ))}
+      {/* Manager KPI Summary Banner */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="glass-card p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Building2 className="w-4 h-4" />
           </div>
-
-          <div className="absolute bottom-4 right-4 glass-card p-2 text-[10px] text-white/40 flex items-center gap-2">
-            <Activity className="w-3 h-3 text-success-light animate-pulse" />
-            <span>Drag to rotate • Scroll to zoom</span>
+          <div>
+            <div className="text-[11px] text-white/50 font-medium">Total Property</div>
+            <div className="text-sm font-bold text-white">10 Floors • {rooms.length} Suites</div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          {selected ? (
-            <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="glass-card p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-white/40 text-xs">SELECTED ROOM</div>
-                <button onClick={() => setSelected(null)} className="text-white/40 hover:text-white text-xs">Clear</button>
-              </div>
-              <div className="text-2xl font-display font-bold text-white mb-1">Room {selected.number}</div>
-              <div className="text-white/50 text-sm mb-3">{selected.buildingName} • Floor {selected.floor}</div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-white/50">Type</span><span className="text-white font-medium">{selected.type}</span></div>
-                <div className="flex justify-between"><span className="text-white/50">Status</span><span className="font-medium" style={{ color: STATUS_COLORS[selected.status] }}>{selected.status}</span></div>
-                <div className="flex justify-between"><span className="text-white/50">Temperature</span><span className="text-white font-medium">{selected.temperature?.toFixed(1)}°C</span></div>
-                {selected.guest && (
-                  <div className="flex justify-between"><span className="text-white/50">Guest</span><span className="text-white font-medium">{selected.guest.name}</span></div>
-                )}
-              </div>
-            </motion.div>
-          ) : (
-            <div className="glass-card p-4 text-center text-white/40 text-sm">
-              <Eye className="w-6 h-6 mx-auto mb-2 text-white/30" />
-              Click any room to inspect
-            </div>
-          )}
-
-          <div className="glass-card p-4">
-            <div className="text-white/40 text-xs uppercase font-semibold mb-3 flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5" /> Building Stats
-            </div>
-            <div className="space-y-2.5">
-              {Object.entries(byBuilding).map(([name, rs]) => {
-                const occupied = rs.filter((r) => r.status === "OCCUPIED").length;
-                const pct = (occupied / rs.length) * 100;
-                return (
-                  <div key={name}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-white/70 font-medium">{name}</span>
-                      <span className="text-white/50">{occupied}/{rs.length}</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill bg-brand-gradient" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        <div className="glass-card p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <BedDouble className="w-4 h-4" />
           </div>
+          <div>
+            <div className="text-[11px] text-white/50 font-medium">Occupancy Rate</div>
+            <div className="text-sm font-bold text-emerald-400">{occupancyRate}% ({occupiedCount} Occupied)</div>
+          </div>
+        </div>
 
-          <div className="glass-card p-4">
-            <div className="text-white/40 text-xs uppercase font-semibold mb-3 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-ai-light" /> AI Insights
-            </div>
-            <div className="space-y-2 text-xs text-white/60">
-              <div className="flex items-start gap-2"><span className="text-ai-light">→</span><span>Block A HVAC: Health 71%. Schedule PM within 5 days.</span></div>
-              <div className="flex items-start gap-2"><span className="text-ai-light">→</span><span>3 villas available. Recommend promotional offer.</span></div>
-              <div className="flex items-start gap-2"><span className="text-ai-light">→</span><span>Floor 5 suites underutilized. Pricing opportunity.</span></div>
+        <div className="glass-card p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-400">
+            <Star className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[11px] text-white/50 font-medium">Available Inventory</div>
+            <div className="text-sm font-bold text-white">{availableCount} Rooms Ready</div>
+          </div>
+        </div>
+
+        <div className="glass-card p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <Waves className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[11px] text-white/50 font-medium">Operational Health</div>
+            <div className="text-sm font-bold text-amber-300">
+              {maintenanceAlertCount > 0 ? `${maintenanceAlertCount} Alerts` : "All Systems Optimal"}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Main 3D Canvas & Sidebars */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+        {/* 3D Canvas */}
+        <div className="lg:col-span-3 flex flex-col gap-3">
+          <Resort3DCanvas />
+          <RoomStatusLegend activeFilter={statusFilter} onSelectFilter={setStatusFilter} />
+        </div>
+
+        {/* Right Controls & Insights Column */}
+        <div className="space-y-4">
+          <FloorSelectorSidebar />
+
+          {/* Operational AI Insights Card (Preserved manager functionality) */}
+          <div className="glass-card p-4 space-y-3">
+            <div className="text-white/50 text-xs uppercase font-semibold flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-ai-light" />
+              <span>AI Operations Insights</span>
+            </div>
+            <div className="space-y-2 text-xs text-white/70">
+              <div className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/5">
+                <span className="text-ai-light font-bold">→</span>
+                <span>Floor 9 & 10 Luxury Suites demand surging (+22%). Recommend dynamic rate lock.</span>
+              </div>
+              <div className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/5">
+                <span className="text-ai-light font-bold">→</span>
+                <span>HVAC smart telemetry: All zone temperatures stable between 21.5°C and 23.0°C.</span>
+              </div>
+              <div className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/5">
+                <span className="text-ai-light font-bold">→</span>
+                <span>Lotus Wellness Spa afternoon slots open — automatic cross-sell push triggered.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Room Detail Modal (specs, photo gallery, 3D room interior tour, allocation) */}
+      <RoomDetailModal isManager={true} />
     </PageContainer>
+  );
+}
+
+export default function DigitalTwinPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[70vh] flex items-center justify-center text-white/50">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 bg-brand-gradient rounded-xl flex items-center justify-center animate-pulse">
+              <Building2 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm">Loading 3D Digital Twin...</span>
+          </div>
+        </div>
+      }
+    >
+      <ResortProvider>
+        <ManagerDigitalTwinContent />
+      </ResortProvider>
+    </Suspense>
   );
 }

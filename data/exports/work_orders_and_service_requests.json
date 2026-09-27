@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cmuhzqv98008xxprjait3dr27",
+    "title": "HVAC Filter Replacement - Block A",
+    "priority": "HIGH",
+    "status": "OPEN",
+    "roomNumber": "N/A",
+    "createdAt": "2026-09-26T06:10:45.308Z"
+  },
+  {
+    "id": "cmuhzqv98008yxprjxz96qr60",
+    "title": "Elevator 2 Annual Inspection",
+    "priority": "HIGH",
+    "status": "OPEN",
+    "roomNumber": "N/A",
+    "createdAt": "2026-09-26T06:10:45.308Z"
+  },
+  {
+    "id": "cmuhzqv98008zxprj6xslnhi8",
+    "title": "Villa V07 AC Unit Repair",
+    "priority": "CRITICAL",
+    "status": "IN_PROGRESS",
+    "roomNumber": "N/A",
+    "createdAt": "2026-09-26T06:10:45.308Z"
+  },
+  {
+    "id": "cmuhzqv980090xprjogmv19oz",
+    "title": "Pool Pump Lubrication",
+    "priority": "MEDIUM",
+    "status": "COMPLETED",
+    "roomNumber": "N/A",
+    "createdAt": "2026-09-26T06:10:45.308Z"
+  },
+  {
+    "id": "cmuhzqv980091xprj56uy48yx",
+    "title": "Kitchen Refrigeration - Temperature Calibration",
+    "priority": "HIGH",
+    "status": "OPEN",
+    "roomNumber": "N/A",
+    "createdAt": "2026-09-26T06:10:45.308Z"
+  },
+  {
+    "id": "cmuhzqv980092xprj0liijzwp",
+    "title": "Backup Generator Test Run",
+    "priority": "HIGH",
+    "status": "OPEN",
+    "roomNumber": "N/A",
+    "createdAt": "2026-09-26T06:10:45.308Z"
+  }
+]

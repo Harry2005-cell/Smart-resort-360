@@ -310,10 +310,19 @@ const createResortStore = () =>
 type ResortStoreType = ReturnType<typeof createResortStore>;
 const ResortStoreContext = createContext<ResortStoreType | null>(null);
 
+let activeStoreInstance: ResortStoreType | null = null;
+
+export const dispatchResortAlert = (alert: Omit<AlertState, "id" | "createdAt" | "isRead">) => {
+  if (activeStoreInstance) {
+    activeStoreInstance.getState().addAlert(alert);
+  }
+};
+
 export function ResortStoreProvider({ children }: { children: ReactNode }) {
   const storeRef = useRef<ResortStoreType>();
   if (!storeRef.current) {
     storeRef.current = createResortStore();
+    activeStoreInstance = storeRef.current;
   }
   return (
     <ResortStoreContext.Provider value={storeRef.current}>

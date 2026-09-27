@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Heart, Smile, Frown, Meh, TrendingUp, TrendingDown } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
@@ -28,6 +31,15 @@ const REVIEWS = [
 ];
 
 export default function SentimentPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if ((session?.user as any)?.role === "GUEST") {
+      router.replace("/guests/concierge");
+    }
+  }, [session, router]);
+
   return (
     <PageContainer>
       <PageHeader title="Sentiment Analysis" description="AI-powered review analysis from all platforms" icon={Heart} />

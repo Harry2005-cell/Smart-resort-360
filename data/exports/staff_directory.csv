@@ -1,0 +1,8 @@
+id,employeeId,name,email,role,position,department,shift,status,currentZone,workloadPct,performanceScore
+"cmuhzqv8u0054xprjhtoukzxl","EMP1000","Admin User","admin@azurehills.com","SUPER_ADMIN","Room Attendant","HOUSEKEEPING","MORNING","ON_DUTY","Lobby","49","8.3"
+"cmuhzqv8u0055xprjsq01gkzs","EMP1001","Ananya Mehta","manager@azurehills.com","RESORT_MANAGER","Waiter","FOOD_BEVERAGE","AFTERNOON","ON_DUTY","Floor 2","50","9.2"
+"cmuhzqv8u0056xprjswqtc5yw","EMP1002","Vikram Patel","revenue@azurehills.com","REVENUE_MANAGER","Technician","MAINTENANCE","NIGHT","ON_DUTY","Pool Area","43","9.2"
+"cmuhzqv8u0057xprjjhceejfo","EMP1003","Priya Nair","operations@azurehills.com","OPERATIONS_MANAGER","Concierge","CONCIERGE","MORNING","ON_DUTY","Restaurant","58","9.4"
+"cmuhzqv8u0058xprjgt39qk7h","EMP1004","Suresh Kumar","housekeeping@azurehills.com","HOUSEKEEPING","Security Guard","SECURITY","AFTERNOON","ON_DUTY","Main Gate","62","7.3"
+"cmuhzqv8u0059xprjv20d349d","EMP1005","Ravi Sharma","maintenance@azurehills.com","MAINTENANCE","Therapist","SPA","NIGHT","ON_DUTY","Lobby","77","9.6"
+"cmuhzqv8u005axprj6q5bbp9n","EMP1006","Deepa Iyer","concierge@azurehills.com","CONCIERGE","Receptionist","FRONT_DESK","MORNING","ON_DUTY","Floor 2","47","9"

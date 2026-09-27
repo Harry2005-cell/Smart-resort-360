@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -8,7 +10,8 @@ import {
 } from "recharts";
 import {
   TrendingUp, Users, Star, Activity, DollarSign, Zap, Target,
-  Sparkles, Cloud, Sun, ArrowUp, ArrowDown, Bell, Wind, Brain, Leaf, MapPin, Heart, BarChart3
+  Sparkles, Cloud, Sun, ArrowUp, ArrowDown, Bell, Wind, Brain, Leaf, MapPin, Heart, BarChart3,
+  Building2, Move3D, Layers, Compass, ArrowRight
 } from "lucide-react";
 import { KPICard } from "@/components/dashboard/kpi-card";
 import { PageHeader, PageContainer } from "@/components/dashboard/page-header";
@@ -57,11 +60,19 @@ const ROOM_DIST = [
 ];
 
 export default function OverviewPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [data, setData] = useState<KPIResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const triggerDemo = useResortStore((s) => s.triggerDemo);
   const demoModeActive = useResortStore((s) => s.demoModeActive);
   const addAlert = useResortStore((s) => s.addAlert);
+
+  useEffect(() => {
+    if ((session?.user as any)?.role === "GUEST") {
+      router.replace("/revenue/simulator");
+    }
+  }, [session, router]);
 
   useEffect(() => {
     fetch("/api/dashboard/kpis")
@@ -248,6 +259,44 @@ export default function OverviewPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* 3D Digital Twin Property Showcase Card */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5 mb-6 relative overflow-hidden border border-blue-500/20 bg-gradient-to-r from-blue-950/30 via-slate-900/40 to-slate-950/50">
+        <div className="absolute top-0 right-0 w-80 h-full bg-blue-500/5 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 flex-shrink-0">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-bold text-base">3D Digital Twin Property Canvas</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  LIVE 3D
+                </span>
+              </div>
+              <div className="text-white/60 text-xs mt-0.5 max-w-xl">
+                Real-time interactive WebGL digital twin with 10-floor navigator, dynamic daylight & twilight simulation, and interactive 3D room interior tours.
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="hidden xl:flex items-center gap-1.5 text-xs text-slate-300 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/5">
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>10 Floors • 240 Rooms</span>
+            </div>
+            <a
+              href="/digital-twin"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+            >
+              <Compass className="w-4 h-4" />
+              <span>Explore 3D Digital Twin</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Bottom Row: Weather + Alerts + AI Recommendations */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
